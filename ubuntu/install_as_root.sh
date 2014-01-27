@@ -1,11 +1,16 @@
 #!/bin/bash
 LOGDIR=logs
+BASEDIR=$(dirname $0)
+BINDIR=$BASEDIR/bin
 
 if [ ! "$USER" == "root" ] ; then
 	echo "ERROR: script should be run as root - sudo $0"
 	exit -1
 fi
 
+if [ ! -d $BINDIR ] ; then
+	mkdir $BINDIR
+fi
 if [ ! -d $LOGDIR ] ; then
 	mkdir $LOGDIR
 fi
@@ -26,7 +31,7 @@ DESC=apt-compile
 LOGFILE=$LOGDIR/log.$STEP.$DESC.txt
 echo "  - log file in $LOGFILE "
 (
-apt-get -y install autoconf automake build-essential git pkg-config texi2html zlib1g-dev
+apt-get -y install autoconf automake build-essential git pkg-config texi2html zlib1g-dev xmlto
 ) 2>&1 > $LOGFILE
 
 echo "APT: install A/V libraries"
@@ -44,14 +49,32 @@ DESC=yasm
 LOGFILE=$LOGDIR/log.$STEP.$DESC.txt
 echo "  - log file in $LOGFILE "
 (
-wget http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
+wget -q http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
 tar xzvf yasm-1.2.0.tar.gz
 rm yasm-1.2.0.tar.gz
-cd yasm-1.2.0
-./configure --prefix="$HOME/ffmpeg_build" --bindir="$HOME/bin"
+pushd yasm-1.2.0
+./configure --prefix="$BASEDIR" --bindir="$BINDIR"
 make
 make install
 make distclean
+popd
 ) 2>&1 > $LOGFILE
 . ~/.profile
+
+echo "INSTALL: x264"
+STEP=$( expr $STEP + 1 )
+DESC=git-x264
+LOGFILE=$LOGDIR/log.$STEP.$DESC.txt
+echo "  - log file in $LOGFILE "
+(
+## git clone --depth 1 git://git.videolan.org/x264.git
+git clone http://git.videolan.org/git/x264.git x264
+pushd x264
+./configure --prefix="$BASEDIR" --bindir="$BINDIR" --enable-static
+make
+make install
+make distclean
+popd
+) 2>&1 > $LOGFILE
+
 
