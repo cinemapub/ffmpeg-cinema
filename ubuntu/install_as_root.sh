@@ -1,6 +1,6 @@
 #!/bin/bash
 LOGDIR=logs
-BASEDIR=$(dirname $0)
+BASEDIR=$(pwd)
 BINDIR=$BASEDIR/bin
 
 if [ ! "$USER" == "root" ] ; then
@@ -62,6 +62,7 @@ popd
 . ~/.profile
 
 echo "INSTALL: x264"
+#apt-get install libx264-dev
 STEP=$( expr $STEP + 1 )
 DESC=git-x264
 LOGFILE=$LOGDIR/log.$STEP.$DESC.txt
